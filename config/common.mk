@@ -53,7 +53,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES +=  \
     vendor/cm/proprietary/RomManager.apk:system/app/RomManager.apk \
     vendor/cm/proprietary/Term.apk:system/app/Term.apk \
-    vendor/cm/proprietary/lib/armeabi/libjackpal-androidterm3.so:system/lib/libjackpal-androidterm3.so
+    vendor/cm/proprietary/lib/armeabi/libjackpal-androidterm4.so:system/lib/libjackpal-androidterm4.so
 
 # Bring in camera effects
 PRODUCT_COPY_FILES +=  \
@@ -106,7 +106,8 @@ PRODUCT_PACKAGES += \
     DSPManager \
     libcyanogen-dsp \
     audio_effects.conf \
-    CMWallpapers
+    CMWallpapers \
+    Apollo
 
 # Extra tools in CM
 PRODUCT_PACKAGES += \
@@ -119,18 +120,34 @@ PRODUCT_VERSION_MAJOR = 9
 PRODUCT_VERSION_MINOR = 0
 PRODUCT_VERSION_MAINTENANCE = 0-RC0
 
+# Set CM_BUILDTYPE
 ifdef CM_NIGHTLY
-    CM_VERSION :=$(PRODUCT_VERSION_MAJOR)-$(shell date +%Y%m%d)-NIGHTLY-$(CM_BUILD)
-else
-    ifdef CM_SNAPSHOT
-        CM_VERSION := $(PRODUCT_VERSION_MAJOR)-$(shell date +%Y%m%d)-SNAPSHOT-$(CM_BUILD)$(CM_EXTRAVERSION)
-    else
-        ifdef CM_RELEASE
-            CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
-        else
-            CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)-UNOFFICIAL
-        endif
+    CM_BUILDTYPE := NIGHTLY
+endif
+ifdef CM_EXPERIMENTAL
+    CM_BUILDTYPE := EXPERIMENTAL
+endif
+ifdef CM_RELEASE
+    CM_BUILDTYPE := RELEASE
+endif
+
+ifdef CM_BUILDTYPE
+    ifdef CM_EXTRAVERSION
+        # Force build type to EXPERIMENTAL
+        CM_BUILDTYPE := EXPERIMENTAL
+        # Add leading dash to CM_EXTRAVERSION
+        CM_EXTRAVERSION := -$(CM_EXTRAVERSION)
     endif
+else
+    # If CM_BUILDTYPE is not defined, set to UNOFFICIAL
+    CM_BUILDTYPE := UNOFFICIAL
+    CM_EXTRAVERSION :=
+endif
+
+ifdef CM_RELEASE
+    CM_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR).$(PRODUCT_VERSION_MAINTENANCE)$(PRODUCT_VERSION_DEVICE_SPECIFIC)-$(CM_BUILD)
+else
+    CM_VERSION := $(PRODUCT_VERSION_MAJOR)-$(shell date -u +%Y%m%d)-$(CM_BUILDTYPE)-$(CM_BUILD)$(CM_EXTRAVERSION)
 endif
 
 PRODUCT_PROPERTY_OVERRIDES += \
